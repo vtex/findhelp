@@ -40,7 +40,6 @@
     "pad": "^1.0.0",
     "ramda": "^0.21.0"
   },
-  "preferGlobal": true,
   "devDependencies": {
     "ava": "^0.15.0",
     "babel-cli": "^6.1.18",
