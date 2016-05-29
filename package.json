@@ -1,0 +1,64 @@
+{
+  "name": "findhelp",
+  "version": "0.1.0",
+  "description": "A simple and hackable lib to create modular cli's.",
+  "main": "lib/index.js",
+  "scripts": {
+    "watch": "babel src --out-dir=lib --watch",
+    "lint": "eslint src",
+    "test": "npm run lint && nyc ava src/*.test.js src/**/*.test.js",
+    "test-watch": "ava src/*.test.js src/**/*.test.js --watch",
+    "prepublish": "babel src --out-dir=lib --ignore=*.test.js",
+    "exe": "chmod +x lib/example.js",
+    "coveralls": "nyc report --reporter=text-lcov | coveralls"
+  },
+  "engines": {
+    "node": ">=0.12.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/vtex/findhelp.git"
+  },
+  "keywords": [
+    "CLI",
+    "vtex",
+    "ecommerce",
+    "commerce",
+    "omnichannel",
+    "platform",
+    "react",
+    "findhelp",
+    "apps"
+  ],
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/vtex/findhelp/issues"
+  },
+  "dependencies": {
+    "chalk": "^1.1.3",
+    "es6-error": "^3.0.0",
+    "pad": "^1.0.0",
+    "ramda": "^0.21.0"
+  },
+  "preferGlobal": true,
+  "devDependencies": {
+    "ava": "^0.15.0",
+    "babel-cli": "^6.1.18",
+    "babel-core": "^6.1.21",
+    "babel-eslint": "^6.0.2",
+    "babel-preset-es2015": "^6.1.18",
+    "babel-preset-stage-0": "^6.1.18",
+    "babel-register": "^6.9.0",
+    "coveralls": "^2.11.9",
+    "eslint": "^2.10.2",
+    "minimist": "^1.2.0",
+    "nyc": "^6.4.4"
+  },
+  "ava": {
+    "failFast": true,
+    "require": [
+      "babel-register"
+    ],
+    "babel": "inherit"
+  }
+}
