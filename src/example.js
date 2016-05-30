@@ -12,7 +12,7 @@ try {
   if (found.command) {
     run(found)
   } else {
-    console.error('Command not found:', found.argv._)
+    console.error('Command not found:', process.argv.slice(2))
   }
 } catch (e) {
   switch (e.constructor) {
