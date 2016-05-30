@@ -1,3 +1,6 @@
+import {help} from './helper'
+import pkg from '../package.json'
+
 export const tree = {
   options: [
     {
@@ -12,7 +15,15 @@ export const tree = {
       type: 'boolean',
     },
   ],
-  handler: () => {},
+  handler: (options) => {
+    if (options.h || options.help) {
+      console.log(help(tree, {name: 'findhelp'}))
+    } else if (options.v || options.version) {
+      console.log(pkg.version)
+    } else {
+      console.log('Hi, there! :)')
+    }
+  },
   login: {
     requiredArgs: 'store',
     optionalArgs: 'email',

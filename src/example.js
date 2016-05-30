@@ -3,7 +3,6 @@ import minimist from 'minimist'
 import {tree} from './fixtures'
 import {
   find,
-  help,
   run,
   MissingRequiredArgsError,
 } from './index'
@@ -11,12 +10,10 @@ import {
 try {
   const found = find(tree, process.argv.slice(2), minimist)
   if (found.command) {
+    console.log(found.command)
     run(found)
   } else {
-    if (!(found.options.h || found.options.help) && found.argv._.length > 0) {
-      console.error('Command not found:', found.argv._)
-    }
-    console.log(help(tree, {name: 'findhelp'}))
+    console.error('Command not found:', found.argv._)
   }
 } catch (e) {
   switch (e.constructor) {
@@ -25,6 +22,6 @@ try {
       break
     default:
       console.error('Something exploded :(')
-      console.error(e)
+      console.error(e, e.stack)
   }
 }

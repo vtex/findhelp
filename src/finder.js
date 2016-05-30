@@ -1,4 +1,4 @@
-import {type, values, find as rfind, propEq, map, groupBy, prop, compose, flatten, reduce, reject, isNil, pipe, props, length} from 'ramda'
+import {type, values, find as rfind, propEq, map, groupBy, prop, compose, flatten, reduce, reject, isNil, pipe, props, length, any} from 'ramda'
 import ExtendableError from 'es6-error'
 
 export class MissingRequiredArgsError extends ExtendableError {}
@@ -32,7 +32,7 @@ export function isCommand (node) {
 }
 
 export function isNamespace (node) {
-  return type(node) === 'Object' && node
+  return type(node) === 'Object' && any(isCommand, values(node)) && node
 }
 
 export function isOptions (node) {

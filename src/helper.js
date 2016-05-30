@@ -37,12 +37,12 @@ function formatOptionalArgs (c) {
 }
 
 function formatCommandArgs (c, k) {
-  return `${c.namespace ? c.namespace + ' ' : ''}${k} ${formatRequiredArgs(c)}${formatOptionalArgs(c)}`
+  return `${c.__ns ? c.__ns + ' ' : ''}${k} ${formatRequiredArgs(c)}${formatOptionalArgs(c)}`
 }
 
 function addNamespace (namespace) {
   return (command) => {
-    command.namespace = namespace
+    command.__ns = namespace
     return command
   }
 }
