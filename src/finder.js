@@ -54,21 +54,22 @@ export function find (node, args, raw, minimist) {
     return find(node, argv._.slice(0), args, raw)
   }
 
-  const next = findNext(args[0], node)
+  const [head, ...tail] = args
+  const next = findNext(head, node)
 
   // Prioritize following namespaces
   if (isNamespace(next)) {
-    return find(next, args.slice(1), raw, minimist)
+    return find(next, tail, raw, minimist)
   }
 
   // Prioritize first arg as command name
-  const command = validateCommand(isCommand(next) || isCommand(node), args)
+  const command = validateCommand(isCommand(next) || isCommand(node), tail)
   const argv = minimist(raw, optionsByType(findOptions(command || node)))
 
   return {
     command,
     node: node,
-    args: args.slice(0, getArgsNumber(command)).concat(argv),
+    args: tail.slice(0, getArgsNumber(command)).concat(argv),
   }
 }
 

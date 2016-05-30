@@ -28,11 +28,11 @@ export const tree = {
     requiredArgs: 'store',
     optionalArgs: 'email',
     description: 'Login with your account',
-    handler: () => {},
+    handler: console.log.bind(console),
   },
   logout: {
     description: 'Logout from current account',
-    handler: () => {},
+    handler: console.log.bind(console),
   },
   list: {
     alias: 'ls',
@@ -46,29 +46,29 @@ export const tree = {
         type: 'boolean',
       },
     ],
-    handler: () => {},
+    handler: console.log.bind(console),
   },
   install: {
     requiredArgs: 'app',
     alias: 'i',
     description: 'Install the given app',
-    handler: () => {},
+    handler: console.log.bind(console),
   },
   uninstall: {
     requiredArgs: 'app',
     description: 'Remove the given app',
-    handler: () => {},
+    handler: console.log.bind(console),
   },
   publish: {
     requiredArgs: 'app',
     description: 'Publish this app',
-    handler: () => {},
+    handler: console.log.bind(console),
   },
   workspace: {
     new: {
       requiredArgs: 'name',
       description: 'Create a new workspace',
-      handler: () => {},
+      handler: console.log.bind(console),
     },
     delete: {
       requiredArgs: 'name',
@@ -80,16 +80,16 @@ export const tree = {
           type: 'string',
         },
       ],
-      handler: () => {},
+      handler: console.log.bind(console),
     },
     promote: {
       description: 'Promote this workspace to master',
       requiredArgs: 'name',
-      handler: () => {},
+      handler: console.log.bind(console),
     },
     list: {
       description: 'List available workspaces',
-      handler: () => {},
+      handler: console.log.bind(console),
     },
   },
 }

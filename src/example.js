@@ -10,7 +10,6 @@ import {
 try {
   const found = find(tree, process.argv.slice(2), minimist)
   if (found.command) {
-    console.log(found.command)
     run(found)
   } else {
     console.error('Command not found:', found.argv._)
