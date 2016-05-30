@@ -64,11 +64,7 @@ Here's a minimal example of the `find` usage:
 #!/usr/bin/env node
 import minimist from 'minimist'
 import {tree} from './fixtures'
-import {
-  find,
-  run,
-  MissingRequiredArgsError,
-} from './index'
+import {find, run, MissingRequiredArgsError} from 'findhelp'
 
 try {
   const found = find(tree, process.argv.slice(2), minimist)
@@ -107,6 +103,8 @@ You can optionally use `run`, which calls `command.handler` with the provided `a
 You can use that same `tree` to output a pretty help menu. Here's the handler for the root command in that example:
 
 ```
+import {help} from 'findhelp'
+
 handler: (options) => {
   if (options.h || options.help) {
     console.log(help(tree, {name: 'findhelp'}))

@@ -1,11 +1,7 @@
 #!/usr/bin/env node
 import minimist from 'minimist'
 import {tree} from './fixtures'
-import {
-  find,
-  run,
-  MissingRequiredArgsError,
-} from './index'
+import {find, run, MissingRequiredArgsError} from './index'
 
 try {
   const found = find(tree, process.argv.slice(2), minimist)
