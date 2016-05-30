@@ -1,7 +1,7 @@
 {
   "name": "findhelp",
   "version": "0.1.2",
-  "description": "A simple and hackable lib to create modular cli's.",
+  "description": "A simple and hackable lib to help create modular command line programs.",
   "main": "lib/index.js",
   "scripts": {
     "watch": "babel src --out-dir=lib --watch",

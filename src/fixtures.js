@@ -14,6 +14,12 @@ export const tree = {
       description: 'show help information',
       type: 'boolean',
     },
+    {
+      long: 'version',
+      short: 'v',
+      description: 'show version number',
+      type: 'boolean',
+    },
   ],
   handler: (options) => {
     if (options.h || options.help) {
