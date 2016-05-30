@@ -60,7 +60,7 @@ Unlike other CLI solutions available, `findhelp` won't *actually do* anything fo
 
 Here's a minimal example of the `find` usage:
 
-```
+```js
 #!/usr/bin/env node
 import minimist from 'minimist'
 import {tree} from './fixtures'
@@ -87,7 +87,7 @@ try {
 
 That's it. You pass to `find` your command `tree`, your `argv` and any `minimist`-like argv parser. It will return an object like:
 
-```
+```js
 {
     command: <the Object with a handler function that matches>,
     args: ['any', 'required', 'or', 'optional', 'args', argv]
@@ -102,7 +102,7 @@ You can optionally use `run`, which calls `command.handler` with the provided `a
 
 You can use that same `tree` to output a pretty help menu. Here's the handler for the root command in that example:
 
-```
+```js
 import {help} from 'findhelp'
 
 handler: (options) => {
@@ -126,7 +126,7 @@ A command tree is composed of three primitives: [`command`, `namespace`, `option
 
 Any objects with a `handler()` function.
 
-```
+```js
 login: {
   requiredArgs: 'store',
   optionalArgs: 'email',
@@ -154,7 +154,7 @@ crazy: {
 
 These contain other commands. Hooray nesting!
 
-```
+```js
 workspace: {
   new: {
     requiredArgs: 'name',
@@ -180,7 +180,7 @@ workspace: {
 
 An array containing options:
 
-```
+```js
 options: [
   {
     long: 'verbose',
