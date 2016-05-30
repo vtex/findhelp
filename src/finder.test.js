@@ -1,140 +1,112 @@
 import test from 'ava'
 import minimist from 'minimist'
-import {pick, keys} from 'ramda'
+import {filter, omit, last, init} from 'ramda'
 import {tree} from './fixtures'
 import {
   find,
   run,
   findOptions,
   optionsByType,
-  filterCommands,
-  filterNamespaces,
-  filterOptions,
+  isCommand,
+  isNamespace,
+  isOptions,
+  getArgsNumber,
   MissingRequiredArgsError,
 } from './finder'
 
 const cases = [
   {
     argv: ['--verbose'],
-    command: null,
-    requiredArgs: [],
-    optionalArgs: [],
-    options: {
+    command: tree,
+    args: [{
       verbose: true,
-    },
-    arguments: [],
+      help: false,
+      h: false,
+    }],
   },
   {
     argv: ['list'],
     command: tree.list,
-    requiredArgs: [],
-    optionalArgs: [],
-    options: {},
-    arguments: [],
+    args: [{
+      a: false,
+      all: false,
+    }],
   },
   {
     argv: ['list', '-a'],
     command: tree.list,
-    requiredArgs: [],
-    optionalArgs: [],
-    options: {
+    args: [{
       a: true,
-    },
-    arguments: [],
+      all: false,
+    }],
   },
   {
     argv: ['workspace', 'list'],
     command: tree.workspace.list,
-    requiredArgs: [],
-    optionalArgs: [],
-    options: {},
-    arguments: [],
+    args: [{}],
   },
   {
     argv: ['install', 'cool-app'],
     command: tree.install,
-    requiredArgs: ['cool-app'],
-    optionalArgs: [],
-    options: {},
-    arguments: ['cool-app'],
+    args: ['cool-app', {}],
   },
   {
     argv: ['i', 'cool-app'],
     command: tree.install,
-    requiredArgs: ['cool-app'],
-    optionalArgs: [],
-    options: {},
-    arguments: ['cool-app'],
+    args: ['cool-app', {}],
   },
   {
     argv: ['list', 'query'],
     command: tree.list,
-    requiredArgs: [],
-    optionalArgs: ['query'],
-    options: {},
-    arguments: ['query'],
+    args: ['query', {
+      a: false,
+      all: false,
+    }],
   },
   {
     argv: ['login', 'bestever', 'me@there.com'],
     command: tree.login,
-    requiredArgs: ['bestever'],
-    optionalArgs: ['me@there.com'],
-    options: {},
-    arguments: ['bestever', 'me@there.com'],
+    args: ['bestever', 'me@there.com', {}],
   },
   {
     argv: ['login', 'bestever', 'me@there.com', 'extra'],
     command: tree.login,
-    requiredArgs: ['bestever'],
-    optionalArgs: ['me@there.com'],
-    options: {},
-    arguments: ['bestever', 'me@there.com'],
+    args: ['bestever', 'me@there.com', {}],
   },
   {
     argv: ['workspace', 'foo'],
-    command: undefined,
-    requiredArgs: [],
-    optionalArgs: [],
-    options: {},
-    arguments: [],
+    command: false,
+    args: [{}],
   },
   {
     argv: ['workspace', 'delete', 'app', '-a', 'test'],
     command: tree.workspace.delete,
-    requiredArgs: ['app'],
-    optionalArgs: [],
-    options: {
+    args: ['app', {
       a: 'test',
-    },
-    arguments: ['app'],
+    }],
   },
 ]
 
 cases.forEach((c) => {
-  test(`finds ${c.argv.join(', ')}`, t => {
+  test(`finds ${c.argv.join(' ')}`, t => {
     const found = find(tree, c.argv, minimist)
-    t.is(found.command, c.command)
-    t.deepEqual(found.requiredArgs, c.requiredArgs)
-    t.deepEqual(found.optionalArgs, c.optionalArgs)
-    t.deepEqual(pick(keys(c.options), found.options), c.options)
-    t.deepEqual(found.argv, minimist(c.argv, optionsByType(findOptions(found.command || found.node))))
+    t.is(c.command, found.command)
+    t.deepEqual(c.args, init(found.args).concat(omit('_', last(found.args))))
   })
 
-  test(`runs ${c.argv.join(', ')}`, t => {
+  test(`runs ${c.argv.join(' ')}`, t => {
     const _this = {}
-    const _argv = {}
+    const args = ['foo', 'bar', {}]
     const found = {
-      argv: _argv,
       command: {
-        handler: function (...args) {
+        handler: function (...passed) {
           // Passes argv as last argument
-          t.deepEqual(args, c.arguments.concat(_argv))
+          t.deepEqual(passed, args)
           // Preserves context
-          t.true(this === _this)
+          t.is(this, _this)
         },
       },
-      requiredArgs: c.requiredArgs,
-      optionalArgs: c.optionalArgs,
+      args,
     }
     t.plan(2)
     run.call(_this, found)
@@ -160,16 +132,21 @@ test('groups options by type', t => {
 })
 
 test('filters commands', t => {
-  const commands = filterCommands(tree)
+  const commands = filter(isCommand)(tree)
   t.true(commands.login === tree.login)
 })
 
 test('filters namespaces', t => {
-  const namespaces = filterNamespaces(tree)
+  const namespaces = filter(isNamespace)(tree)
   t.true(namespaces.workspace === tree.workspace)
 })
 
 test('filters options', t => {
-  const options = filterOptions(tree)
+  const options = filter(isOptions)(tree)
   t.true(options.options === tree.options)
+})
+
+test('gets args length', t => {
+  t.is(getArgsNumber(tree.login), 2)
+  t.is(getArgsNumber(tree.install), 1)
 })

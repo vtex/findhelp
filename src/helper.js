@@ -1,12 +1,12 @@
-import {filterCommands, filterNamespaces, filterOptions, toArray} from './finder'
-import {map, mapObjIndexed, values, pipe, length} from 'ramda'
+import {isCommand, isNamespace, isOptions, toArray} from './finder'
+import {map, mapObjIndexed, values, pipe, length, filter} from 'ramda'
 import pad from 'pad'
 
 export function help (tree, pkg) {
-  const rootOptions = filterOptions(tree)
+  const rootOptions = filter(isOptions)(tree)
   const namespaces = {
-    root: filterCommands(tree),
-    ...filterNamespaces(tree),
+    root: filter(isCommand)(tree),
+    ...filter(isNamespace)(tree),
   }
 
   return `
