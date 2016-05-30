@@ -1,6 +1,6 @@
 {
   "name": "findhelp",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "A simple and hackable lib to create modular cli's.",
   "main": "lib/index.js",
   "scripts": {
