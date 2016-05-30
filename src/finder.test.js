@@ -22,6 +22,8 @@ const cases = [
       verbose: true,
       help: false,
       h: false,
+      v: false,
+      version: false,
     }],
   },
   {
