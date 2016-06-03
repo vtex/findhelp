@@ -24,7 +24,7 @@ ${map(formatOption, rootOptions.options).join('\n')}
 
 function formatCommand (padLength) {
   return (c, k) => {
-    return `    ${pad(formatCommandArgs(c, k), padLength)}${c.description}`
+    return `    ${pad(formatCommandArgs(c, k), padLength + 2)}${c.description}`
   }
 }
 
