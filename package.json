@@ -6,11 +6,12 @@
   "scripts": {
     "watch": "babel src --out-dir=lib --watch",
     "lint": "eslint src",
-    "test": "npm run lint && nyc ava src/*.test.js src/**/*.test.js",
-    "test-watch": "ava src/*.test.js src/**/*.test.js --watch",
+    "ava": "ava",
+    "nyc": "nyc npm run ava",
+    "test": "npm run lint && npm run nyc",
+    "test-watch": "ava --watch",
     "prepublish": "babel src --out-dir=lib --ignore=*.test.js",
-    "exe": "chmod +x lib/example.js",
-    "coveralls": "nyc report --reporter=text-lcov | coveralls"
+    "exe": "chmod +x lib/example.js"
   },
   "engines": {
     "node": ">=0.12.0"
@@ -57,6 +58,7 @@
     "nyc": "^6.4.4"
   },
   "ava": {
+    "verbose": true,
     "failFast": true,
     "require": [
       "babel-register"
