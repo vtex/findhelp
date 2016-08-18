@@ -63,13 +63,15 @@ export function find (node, args, raw, minimist) {
   }
 
   // Prioritize first arg as command name
-  const command = validateCommand(isCommand(next) || isCommand(node), tail)
+  const nextIsCommand = isCommand(next)
+  const passedArgs = nextIsCommand ? tail : args
+  const command = validateCommand(nextIsCommand || isCommand(node), passedArgs)
   const argv = minimist(raw, optionsByType(findOptions(command || node)))
 
   return {
     command,
     node: node,
-    args: tail.slice(0, getArgsNumber(command)).concat(argv),
+    args: passedArgs.slice(0, getArgsNumber(command)).concat(argv),
   }
 }
 

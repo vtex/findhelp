@@ -5,7 +5,7 @@ import pad from 'pad'
 export function help (tree, pkg) {
   const rootOptions = filter(isOptions)(tree)
   const namespaces = {
-    root: filter(isCommand)(tree),
+    root: filter(node => isCommand(node) && !isNamespace(node))(tree),
     ...filter(isNamespace)(tree),
   }
 
@@ -49,7 +49,14 @@ function addNamespace (namespace) {
 
 function formatNamespace (node, namespace) {
   const ns = namespace === 'root' ? undefined : namespace
-  const namespaced = map(addNamespace(ns), node)
+  const commands = filter(isCommand)(node)
+
+  let namespaced = {}
+  if (isCommand(node)) {
+    namespaced[namespace] = node
+  }
+  namespaced = {...namespaced, ...map(addNamespace(ns), commands)}
+
   const maxLength = Math.max(...values(map(pipe(formatCommandArgs, length), namespaced)))
   return values(mapObjIndexed(formatCommand(maxLength), namespaced)).join('\n')
 }

@@ -98,4 +98,21 @@ export const tree = {
       handler: console.log.bind(console),
     },
   },
+  settings: {
+    requiredArgs: 'app',
+    optionalArgs: 'field',
+    description: 'Get an app\'s settings',
+    handler: console.log.bind(console),
+
+    set: {
+      requiredArgs: ['app', 'field', 'value'],
+      description: 'Set an app\'s settings value',
+      handler: console.log.bind(console),
+    },
+    unset: {
+      requiredArgs: ['app', 'field'],
+      description: 'Unset an app\'s settings value',
+      handler: console.log.bind(console),
+    },
+  },
 }

@@ -87,6 +87,26 @@ const cases = [
       a: 'test',
     }],
   },
+  {
+    argv: ['settings', 'cool-app'],
+    command: tree.settings,
+    args: ['cool-app', {}],
+  },
+  {
+    argv: ['settings', 'cool-app', 'someField'],
+    command: tree.settings,
+    args: ['cool-app', 'someField', {}],
+  },
+  {
+    argv: ['settings', 'set', 'cool-app', 'someField', 'abc123'],
+    command: tree.settings.set,
+    args: ['cool-app', 'someField', 'abc123', {}],
+  },
+  {
+    argv: ['settings', 'unset', 'cool-app', 'someField'],
+    command: tree.settings.unset,
+    args: ['cool-app', 'someField', {}],
+  },
 ]
 
 cases.forEach((c) => {
