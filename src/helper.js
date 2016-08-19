@@ -51,11 +51,10 @@ function formatNamespace (node, namespace) {
   const ns = namespace === 'root' ? undefined : namespace
   const commands = filter(isCommand)(node)
 
-  let namespaced = {}
-  if (isCommand(node)) {
-    namespaced[namespace] = node
-  }
-  namespaced = {...namespaced, ...map(addNamespace(ns), commands)}
+  let namespaced = map(addNamespace(ns), commands)
+  namespaced = isCommand(node)
+    ? {[namespace]: node, ...namespaced}
+    : namespaced
 
   const maxLength = Math.max(...values(map(pipe(formatCommandArgs, length), namespaced)))
   return values(mapObjIndexed(formatCommand(maxLength), namespaced)).join('\n')
