@@ -28,7 +28,7 @@ export function findOptions (node) {
 }
 
 export function isCommand (node) {
-  return !isNil(node) && type(node.handler) === 'Function' && node
+  return !isNil(node) && (type(node.handler) === 'Function' || type(node.module) === 'String') && node
 }
 
 export function isNamespace (node) {
@@ -51,21 +51,24 @@ export function find (node, args, raw, minimist) {
   // Accept (node, raw, minimist) as initial arguments
   if (arguments.length === 3) {
     const argv = raw(args, optionsByType(findOptions(node)))
-    return find(node, argv._.slice(0), args, raw)
+    return findWithPath(node, argv._.slice(0), args, raw, [])
   }
 
+  return findWithPath(node, args, raw, minimist, [])
+}
+
+const findWithPath = (node, args, raw, minimist, path) => {
   const [head, ...tail] = args
   const next = findNext(head, node)
 
   // Prioritize following namespaces
   if (isNamespace(next)) {
-    return find(next, tail, raw, minimist)
+    return findWithPath(next, tail, raw, minimist, [...path, head])
   }
 
   // Prioritize first arg as command name
-  const nextIsCommand = isCommand(next)
-  const passedArgs = nextIsCommand ? tail : args
-  const command = validateCommand(nextIsCommand || isCommand(node), passedArgs)
+  const [command, passedArgs] = getCommand(node, next, head, tail, path)
+  validateCommand(command, passedArgs)
   const argv = minimist(raw, optionsByType(findOptions(command || node)))
 
   return {
@@ -75,6 +78,25 @@ export function find (node, args, raw, minimist) {
   }
 }
 
+const getCommand = (currentNode, nextNode, nextArg, tail, argPath) => {
+  if (isCommand(nextNode)) {
+    nextNode.__path = [...argPath, nextArg]
+    return [nextNode, tail]
+  }
+  currentNode.__path = argPath
+  return [currentNode, [nextArg, ...tail]]
+}
+
 export function run ({command, args}) {
+  if (command.module) {
+    const loadedModule = load(command.module)
+    const handler = command.__path.reduce((current, next) => current[next], loadedModule)
+    return handler.apply(this, args)
+  }
   return command.handler.apply(this, args)
+}
+
+const load = (modulePath) => {
+  const module = require(modulePath)
+  return module.__esModule ? module.default : module
 }
