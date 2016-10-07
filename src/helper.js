@@ -1,13 +1,29 @@
-import {isCommand, isNamespace, isOptions, toArray} from './finder'
-import {map, mapObjIndexed, values, pipe, length, filter} from 'ramda'
 import pad from 'pad'
+import {
+  toArray,
+  isModule,
+  isCommand,
+  isOptions,
+  loadModule,
+  isNamespace,
+} from './finder'
+import {
+  __,
+  map,
+  pipe,
+  keys,
+  pick,
+  filter,
+  length,
+  values,
+  groupBy,
+  compose,
+  mapObjIndexed,
+} from 'ramda'
 
 export function help (tree, pkg) {
-  const rootOptions = filter(isOptions)(tree)
-  const namespaces = {
-    root: filter(node => isCommand(node) && !isNamespace(node))(tree),
-    ...filter(isNamespace)(tree),
-  }
+  const {rootOptions, root, ns} = groupTree(loadTree(tree))
+  const namespaces = {root, ...ns}
 
   return `
   Usage: ${pkg.name} <command> [options]
@@ -21,6 +37,20 @@ ${values(mapObjIndexed(formatNamespace, namespaces)).join('\n\n')}
 ${map(formatOption, rootOptions.options).join('\n')}
 `
 }
+
+const loadTree = map(n => isModule(n) ? loadModule(n) : n)
+
+const criteria = tree => key =>
+  isOptions(tree[key]) ? 'rootOptions'
+  : isCommand(tree[key]) && !isNamespace(tree[key]) ? 'root'
+  : isNamespace(tree[key]) ? 'ns'
+  : '_'
+
+const groupTree = tree => compose(
+  map(pick(__, tree)),
+  groupBy(criteria(tree)),
+  keys,
+)(tree)
 
 function formatCommand (padLength) {
   return (c, k) => {
@@ -42,6 +72,9 @@ function formatCommandArgs (c, k) {
 
 function addNamespace (namespace) {
   return (command) => {
+    if (isModule(command)) {
+      command = loadModule(command)
+    }
     command.__ns = namespace
     return command
   }
@@ -49,7 +82,7 @@ function addNamespace (namespace) {
 
 function formatNamespace (node, namespace) {
   const ns = namespace === 'root' ? undefined : namespace
-  const commands = filter(isCommand)(node)
+  const commands = filter(n => isCommand(n) || isModule(n), node)
 
   let namespaced = {}
   if (isCommand(node)) {

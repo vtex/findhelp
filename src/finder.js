@@ -1,5 +1,22 @@
-import {type, values, find as rfind, propEq, map, groupBy, prop, compose, flatten, reduce, reject, isNil, pipe, props, length, any} from 'ramda'
 import ExtendableError from 'es6-error'
+import {
+  any,
+  map,
+  pipe,
+  prop,
+  type,
+  isNil,
+  props,
+  reject,
+  reduce,
+  propEq,
+  values,
+  length,
+  compose,
+  groupBy,
+  flatten,
+  find as rfind,
+} from 'ramda'
 
 export class MissingRequiredArgsError extends ExtendableError {}
 
@@ -32,7 +49,15 @@ export function isCommand (node) {
 }
 
 export function isNamespace (node) {
-  return type(node) === 'Object' && any(isCommand, values(node)) && node
+  return type(node) === 'Object' && any(v => isCommand(v) || isModule(v), values(node)) && node
+}
+
+export function isModule (node) {
+  return !isNil(node) && type(node.module) === 'String' && node
+}
+
+export function loadModule (node) {
+  return require(node.module).default || require(node.module)
 }
 
 export function isOptions (node) {
@@ -44,7 +69,11 @@ export function findByAlias (key, node) {
 }
 
 export function findNext (key, node) {
-  return key ? (node[key] || findByAlias(key, node)) : null
+  if (!key) {
+    return null
+  }
+  const next = node[key] || findByAlias(key, node)
+  return isModule(next) ? loadModule(next) : next
 }
 
 export function find (node, args, raw, minimist) {
