@@ -97,8 +97,9 @@ export function find (node, args, raw, minimist) {
   const command = validateCommand(nextIsCommand || isCommand(node), passedArgs)
   const argv = minimist(raw, optionsByType(findOptions(command || node)))
   const argsNumber = getArgsNumber(command)
-  const filledArgs = passedArgs.length < argsNumber
-    ? passedArgs.slice(0, argsNumber).concat(new Array(argsNumber - passedArgs).fill(null))
+  const passedArgsNumber = passedArgs.length
+  const filledArgs = passedArgsNumber < argsNumber
+    ? passedArgs.slice(0, argsNumber).concat(new Array(argsNumber - passedArgsNumber).fill(null))
     : passedArgs.slice(0, argsNumber)
 
   return {
