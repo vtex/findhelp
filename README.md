@@ -63,13 +63,13 @@ Here's a minimal example of the `find` usage:
 ```js
 #!/usr/bin/env node
 import minimist from 'minimist'
-import {tree} from './fixtures'
 import {find, run, MissingRequiredArgsError} from 'findhelp'
+import {tree} from './fixtures' // Your tree defining the commands
 
 try {
   const found = find(tree, process.argv.slice(2), minimist)
   if (found.command) {
-    run(found)
+    run(found) // This will run the command called by the user
   } else {
     console.error('Command not found:', process.argv.slice(2))
   }
@@ -100,7 +100,7 @@ You can optionally use `run`, which calls `command.handler` with the provided `a
 
 ### `help(tree, {name})`
 
-You can use that same `tree` to output a pretty help menu. Here's the handler for the root command in that example:
+You can use that same `tree` to output a pretty help menu. The second parameter is an object with the name of the command line application. Here's the handler for the root command in that example:
 
 ```js
 import {help} from 'findhelp'
@@ -120,11 +120,19 @@ No automatic anything. You're in control. (Use your power wisely).
 
 ### The command tree
 
-A command tree is composed of three primitives: [`command`, `namespace`, `options`]:
+A command tree is composed of one or many command objects with:
 
-#### Commands
+- **`requiredArgs`**: Required arguments to run the command
+- **`optinalArgs`**: Optional arguments
+- **`description`**: Description to be displayed in the `help()` function
+- **`handler`**: Function that will be called with the `run()` function passing the required and optional arguments as parameters
+- **`alias`**: An alias for the command
+- **`module`**: A path to a Node module that exports a command object
+- **`options`**: An object of [`options`](#options)
 
-Any objects with a `handler()` function.
+A minimum viable command requires a `handler` function to be defined.
+
+#### Examples
 
 ```js
 login: {
@@ -150,9 +158,13 @@ crazy: {
 },
 ```
 
+These will define the following commands:
+- `yourapp login <store> [email]`
+- `yourapp crazy <mustbegiven> [thisisfine]`
+
 #### Namespaces
 
-These contain other commands. Hooray nesting!
+Namespaces enable commands with 2 or more levels. Example:
 
 ```js
 workspace: {
@@ -175,6 +187,10 @@ workspace: {
   },
 }
 ```
+
+These will define the following commands:
+- `yourapp workspace new <name>`
+- `yourapp workspace delete <name>`
 
 ### Options
 
@@ -201,6 +217,11 @@ options: [
   },
 ]
 ```
+
+These will enable the following options:
+- `yourapp --verbose`
+- `yourapp --help` or `yourapp -h`
+- `yourapp --version` or `yourapp -v`
 
 ## That's it
 
