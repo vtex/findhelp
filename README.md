@@ -56,27 +56,25 @@ Second, I had a free weekend. 🙃
 
 Unlike other CLI solutions available, `findhelp` won't *actually do* anything for you. It finds the command based on arguments, and gets out of your way.
 
-### `find(tree, argv, minimist)` and `run(command)`
+### `find(tree, argv)` and `run(command, root)`
 
 Here's a minimal example of the `find` usage:
 
 ```js
 #!/usr/bin/env node
-import minimist from 'minimist'
-import {find, run, MissingRequiredArgsError} from 'findhelp'
+import {find, run, MissingRequiredArgsError, CommandNotFoundError} from 'findhelp'
 import {tree} from './fixtures' // Your tree defining the commands
 
 try {
-  const found = find(tree, process.argv.slice(2), minimist)
-  if (found.command) {
-    run(found) // This will run the command called by the user
-  } else {
-    console.error('Command not found:', process.argv.slice(2))
-  }
+  const found = find(tree, process.argv.slice(2))
+  run(found) // This will run the command called by the user
 } catch (e) {
   switch (e.constructor) {
     case MissingRequiredArgsError:
       console.error('Missing required arguments:', e.message)
+      break
+    case CommandNotFoundError:
+      console.error('Command not found:', process.argv.slice(2))
       break
     default:
       console.error('Something exploded :(')
@@ -85,7 +83,7 @@ try {
 }
 ```
 
-That's it. You pass to `find` your command `tree`, your `argv` and any `minimist`-like argv parser. It will return an object like:
+That's it. You pass to `find` your command `tree` and your `argv`, and it will return an object like:
 
 ```js
 {
@@ -127,10 +125,9 @@ A command tree is composed of one or many command objects with:
 - **`description`**: Description to be displayed in the `help()` function
 - **`handler`**: Function that will be called with the `run()` function passing the required and optional arguments as parameters
 - **`alias`**: An alias for the command
-- **`module`**: A path to a Node module that exports a command object
 - **`options`**: An object of [`options`](#options)
 
-A minimum viable command requires a `handler` function to be defined.
+The `handler` can be either a function or a string that locates the module where the handling function is the default export. The `root` parameter in `run()` will be used to resolve the full path of the module in the case a string is passed. If `handler` is not specified, findhelp will try to locate the module following the folders maching the command tree structure from the specified `root` (see the examples below).
 
 #### Examples
 
@@ -139,23 +136,38 @@ login: {
   requiredArgs: 'store',
   optionalArgs: 'email',
   description: 'Login with your account',
-  handler: (store, email, options) => { // do awesome stuff! },
+  handler: (store, email, options) => { /* do awesome stuff! */ },
+logout: {
+  description: 'Logout from current account',
+  handler: './logout'
 },
-crazy: {
-  alias: 'c',
-  description: 'Full-fledged command example',
-  requiredArgs: 'mustbegiven',
-  optionalArgs: 'thisisfine',
-  options: [
-    {
-      short: 'a',
-      long: 'all',
-      description: 'show hidden',
-      type: 'boolean',
-    },
-  ],
-  handler: (mustbegiven, thisisfine, options) => { // do awesome stuff! },
-},
+workspace: {
+  new: {
+    requiredArgs: 'name',
+    description: 'Create a new workspace',
+    // will look at './workspace/new' (from root) for handling function
+  },
+  delete: {
+    requiredArgs: 'name',
+    description: 'Delete this workspace',
+    options: [
+      {
+        short: 'a',
+        long: 'account',
+        type: 'string',
+      },
+    ],
+    // will look at './workspace/delete' (from root) for handling function
+  },
+}
+```
+
+Here is how './workspace/delete' could look like:
+
+```js
+export default async (name, {account}) => {
+  // ...
+}
 ```
 
 These will define the following commands:
@@ -220,6 +232,7 @@ options: [
 
 These will enable the following options:
 - `yourapp --verbose`
+
 - `yourapp --help` or `yourapp -h`
 - `yourapp --version` or `yourapp -v`
 
