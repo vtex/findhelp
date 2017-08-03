@@ -1,6 +1,6 @@
 import test from 'ava'
-import minimist from 'minimist'
 import {filter, omit, last, init} from 'ramda'
+
 import {tree} from './fixtures'
 import {
   find,
@@ -12,6 +12,7 @@ import {
   isOptions,
   getArgsNumber,
   MissingRequiredArgsError,
+  CommandNotFoundError,
 } from './finder'
 
 const cases = [
@@ -111,9 +112,13 @@ const cases = [
 
 cases.forEach((c) => {
   test(`finds ${c.argv.join(' ')}`, t => {
-    const found = find(tree, c.argv, minimist)
-    t.is(c.command, found.command)
-    t.deepEqual(c.args, init(found.args).concat(omit('_', last(found.args))))
+    if (c.command) {
+      const found = find(tree, c.argv)
+      t.is(c.command, found.command)
+      t.deepEqual(c.args, init(found.args).concat(omit('_', last(found.args))))
+    } else {
+      t.throws(() => find(tree, c.argv), CommandNotFoundError)
+    }
   })
 
   test(`runs ${c.argv.join(' ')}`, t => {
@@ -136,7 +141,7 @@ cases.forEach((c) => {
 })
 
 test('fails if not given required args', t => {
-  t.throws(() => find(tree, ['workspace', 'new'], minimist), MissingRequiredArgsError)
+  t.throws(() => find(tree, ['workspace', 'new']), MissingRequiredArgsError)
 })
 
 test('finds options', t => {

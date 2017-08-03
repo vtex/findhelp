@@ -38,7 +38,7 @@ export const optionsByType = compose(map(getOptions), groupByType)
 export const getArgsNumber = pipe(props(['requiredArgs', 'optionalArgs']), flatten, reject(isNil), length)
 
 export function validateCommand (command, args) {
-  if (!command) {
+  if (!command || !isCommand(command)) {
     throw new CommandNotFoundError()
   }
   if (toArray(command.requiredArgs).length > args.length) {
@@ -75,7 +75,7 @@ export function findNext (key, node) {
   return next
 }
 
-export function find (node, args) {
+export function find (node, argv) {
   if (!node.path) {
     node.path = '.'
   }
@@ -86,29 +86,31 @@ export function find (node, args) {
     }
   }, node)
 
-  const [head, ...tail] = args
+  const [head, ...tail] = argv
   const next = findNext(head, node)
+  const nextIsNamespace = isNamespace(next)
+  const nextIsCommand = isCommand(next)
 
   // Prioritize following namespaces
-  if (isNamespace(next)) {
+  if (nextIsNamespace || nextIsCommand) {
     return find(next, tail)
   }
 
-  // Prioritize first arg as command name
-  const nextIsCommand = isCommand(next)
-  const passedArgs = nextIsCommand ? tail : args
-  const command = validateCommand(nextIsCommand || isCommand(node), passedArgs)
-  const argv = minimist(args, optionsByType(findOptions(command || node)))
+  const parsedArgv = minimist(argv, optionsByType(findOptions(node)))
+  const givenArgs = parsedArgv._.slice(0)
+  const command = validateCommand(node, givenArgs)
   const argsNumber = getArgsNumber(command)
-  const passedArgsNumber = passedArgs.length
-  const filledArgs = passedArgsNumber < argsNumber
-    ? passedArgs.slice(0, argsNumber).concat(new Array(argsNumber - passedArgsNumber).fill(null))
-    : passedArgs.slice(0, argsNumber)
+  const givenArgsNumber = givenArgs.length
+
+  const filledArgs = givenArgs.slice(0, argsNumber)
+  if (givenArgsNumber < argsNumber) {
+    filledArgs.push(...new Array(argsNumber - givenArgsNumber).fill(null))
+  }
 
   return {
     command,
     node: node,
-    args: filledArgs.concat(argv),
+    args: filledArgs.concat(parsedArgv),
   }
 }
 
