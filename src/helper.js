@@ -1,10 +1,8 @@
 import pad from 'pad'
 import {
   toArray,
-  isModule,
   isCommand,
   isOptions,
-  loadModule,
   isNamespace,
 } from './finder'
 import {
@@ -22,7 +20,7 @@ import {
 } from 'ramda'
 
 export function help (tree, pkg) {
-  const {rootOptions, root, ns} = groupTree(loadTree(tree))
+  const {rootOptions, root, ns} = groupTree(tree)
   const namespaces = {root, ...ns}
 
   return `
@@ -37,8 +35,6 @@ ${values(mapObjIndexed(formatNamespace, namespaces)).join('\n\n')}
 ${map(formatOption, rootOptions.options).join('\n')}
 `
 }
-
-const loadTree = map(n => isModule(n) ? loadModule(n) : n)
 
 const criteria = tree => key =>
   isOptions(tree[key]) ? 'rootOptions'
@@ -72,9 +68,6 @@ function formatCommandArgs (c, k) {
 
 function addNamespace (namespace) {
   return (command) => {
-    if (isModule(command)) {
-      command = loadModule(command)
-    }
     command.__ns = namespace
     return command
   }
@@ -82,7 +75,7 @@ function addNamespace (namespace) {
 
 function formatNamespace (node, namespace) {
   const ns = namespace === 'root' ? undefined : namespace
-  const commands = filter(n => isCommand(n) || isModule(n), node)
+  const commands = filter(n => isCommand(n), node)
 
   let namespaced = {}
   if (isCommand(node)) {

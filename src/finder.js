@@ -1,3 +1,4 @@
+import path from 'path'
 import ExtendableError from 'es6-error'
 import {
   any,
@@ -16,9 +17,15 @@ import {
   groupBy,
   flatten,
   find as rfind,
+  forEachObjIndexed,
 } from 'ramda'
+import minimist from 'minimist'
+
+export class HandlerNotFoundError extends ExtendableError {}
 
 export class MissingRequiredArgsError extends ExtendableError {}
+
+export class CommandNotFoundError extends ExtendableError {}
 
 export const toArray = a => Array.isArray(a) ? a : (a == null ? [] : [a])
 
@@ -32,7 +39,7 @@ export const getArgsNumber = pipe(props(['requiredArgs', 'optionalArgs']), flatt
 
 export function validateCommand (command, args) {
   if (!command) {
-    return command
+    throw new CommandNotFoundError()
   }
   if (toArray(command.requiredArgs).length > args.length) {
     throw new MissingRequiredArgsError(command.requiredArgs)
@@ -45,19 +52,11 @@ export function findOptions (node) {
 }
 
 export function isCommand (node) {
-  return !isNil(node) && type(node.handler) === 'Function' && node
+  return !isNil(node) && (node.handler || node.options || node.requiredArgs || node.optionalArgs || node.alias || node.description) && node
 }
 
 export function isNamespace (node) {
-  return type(node) === 'Object' && any(v => isCommand(v) || isModule(v), values(node)) && node
-}
-
-export function isModule (node) {
-  return !isNil(node) && type(node.module) === 'String' && node
-}
-
-export function loadModule (node) {
-  return require(node.module).default || require(node.module)
+  return type(node) === 'Object' && any(v => isCommand(v), values(node)) && node
 }
 
 export function isOptions (node) {
@@ -73,29 +72,33 @@ export function findNext (key, node) {
     return null
   }
   const next = node[key] || findByAlias(key, node)
-  return isModule(next) ? loadModule(next) : next
+  return next
 }
 
-export function find (node, args, raw, minimist) {
-  // Accept (node, raw, minimist) as initial arguments
-  if (arguments.length === 3) {
-    const argv = raw(args, optionsByType(findOptions(node)))
-    return find(node, argv._.slice(0), args, raw)
+export function find (node, args) {
+  if (!node.path) {
+    node.path = '.'
   }
+
+  forEachObjIndexed((child, key) => {
+    if (isCommand(child) || isNamespace(child)) {
+      child.path = `${node.path}/${key}`
+    }
+  }, node)
 
   const [head, ...tail] = args
   const next = findNext(head, node)
 
   // Prioritize following namespaces
   if (isNamespace(next)) {
-    return find(next, tail, raw, minimist)
+    return find(next, tail)
   }
 
   // Prioritize first arg as command name
   const nextIsCommand = isCommand(next)
   const passedArgs = nextIsCommand ? tail : args
   const command = validateCommand(nextIsCommand || isCommand(node), passedArgs)
-  const argv = minimist(raw, optionsByType(findOptions(command || node)))
+  const argv = minimist(args, optionsByType(findOptions(command || node)))
   const argsNumber = getArgsNumber(command)
   const passedArgsNumber = passedArgs.length
   const filledArgs = passedArgsNumber < argsNumber
@@ -109,6 +112,29 @@ export function find (node, args, raw, minimist) {
   }
 }
 
-export function run ({command, args}) {
-  return command.handler.apply(this, args)
+function loadModule (path) {
+  return require(path).default || require(path)
+}
+
+function loadHandler (path) {
+  let handler
+  try {
+    handler = loadModule(path)
+  } catch (e) {
+    throw new HandlerNotFoundError()
+  }
+  return handler
+}
+
+export function run ({command, args}, root) {
+  let handler
+  if (typeof command.handler === 'function') {
+    handler = command.handler
+  } else if (typeof command.handler === 'string') {
+    handler = loadHandler(path.join(root, command.handler))
+  } else if (typeof command.handler === 'undefined') {
+    handler = loadHandler(path.join(root, command.path))
+  }
+
+  return handler.apply(this, args)
 }
