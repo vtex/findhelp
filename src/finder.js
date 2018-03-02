@@ -21,8 +21,6 @@ import {
 } from 'ramda'
 import minimist from 'minimist'
 
-export class HandlerNotFoundError extends ExtendableError {}
-
 export class MissingRequiredArgsError extends ExtendableError {}
 
 export class CommandNotFoundError extends ExtendableError {}
@@ -118,24 +116,14 @@ function loadModule (path) {
   return require(path).default || require(path)
 }
 
-function loadHandler (path) {
-  let handler
-  try {
-    handler = loadModule(path)
-  } catch (e) {
-    throw new HandlerNotFoundError()
-  }
-  return handler
-}
-
 export function run ({command, args}, root) {
   let handler
   if (typeof command.handler === 'function') {
     handler = command.handler
   } else if (typeof command.handler === 'string') {
-    handler = loadHandler(path.join(root, command.handler))
+    handler = loadModule(path.join(root, command.handler))
   } else if (typeof command.handler === 'undefined') {
-    handler = loadHandler(path.join(root, command.path))
+    handler = loadModule(path.join(root, command.path))
   }
 
   return handler.apply(this, args)
