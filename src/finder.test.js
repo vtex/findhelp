@@ -155,7 +155,7 @@ test('groups options by type', t => {
   const options = findOptions(tree)
   const types = optionsByType(options);
   ['verbose', 'h', 'help']
-  .forEach(o => t.true(types.boolean.indexOf(o) >= 0))
+    .forEach(o => t.true(types.boolean.indexOf(o) >= 0))
 })
 
 test('filters commands', t => {

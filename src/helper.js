@@ -38,9 +38,9 @@ ${map(formatOption, rootOptions.options).join('\n')}
 
 const criteria = tree => key =>
   isOptions(tree[key]) ? 'rootOptions'
-  : isCommand(tree[key]) && !isNamespace(tree[key]) ? 'root'
-  : isNamespace(tree[key]) ? 'ns'
-  : '_'
+    : isCommand(tree[key]) && !isNamespace(tree[key]) ? 'root'
+      : isNamespace(tree[key]) ? 'ns'
+        : '_'
 
 const groupTree = tree => compose(
   map(pick(__, tree)),
