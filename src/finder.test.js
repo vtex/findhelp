@@ -30,7 +30,7 @@ const cases = [
   {
     argv: ['list'],
     command: tree.list,
-    args: [null, {
+    args: [undefined, {
       a: false,
       all: false,
     }],
@@ -38,7 +38,7 @@ const cases = [
   {
     argv: ['list', '-a'],
     command: tree.list,
-    args: [null, {
+    args: [undefined, {
       a: true,
       all: false,
     }],
@@ -91,7 +91,7 @@ const cases = [
   {
     argv: ['settings', 'cool-app'],
     command: tree.settings,
-    args: ['cool-app', null, {}],
+    args: ['cool-app', undefined, {}],
   },
   {
     argv: ['settings', 'cool-app', 'someField'],

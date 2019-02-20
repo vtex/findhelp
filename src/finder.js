@@ -102,7 +102,7 @@ export function find (node, argv) {
 
   const filledArgs = givenArgs.slice(0, argsNumber)
   if (givenArgsNumber < argsNumber) {
-    filledArgs.push(...new Array(argsNumber - givenArgsNumber).fill(null))
+    filledArgs.push(...new Array(argsNumber - givenArgsNumber).fill(undefined))
   }
 
   return {
